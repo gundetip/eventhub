@@ -1,6 +1,6 @@
 # EventHub — Booking Management Test Scenarios
 
-Generated: 2026-03-06
+Generated: 2026-10-04
 Scope: Booking Management (Flow 4 — View, Cancel, Clear, Refund Eligibility)
 
 ---
@@ -328,6 +328,32 @@ Scope: Booking Management (Flow 4 — View, Cancel, Clear, Refund Eligibility)
 
 ---
 
+### TC-207: Bookings list contains only the authenticated user's bookings
+**Category**: Security
+**Priority**: P0
+**Preconditions**: User A and User B each have at least one booking
+**Steps**:
+1. Send `GET /api/bookings` with User A's valid JWT
+2. Inspect every booking ID and owner in the response
+**Expected Results**: Every returned booking belongs to User A; no booking owned by User B is included
+**Business Rule**: Rule 2 — each user only sees their own bookings; `bookingRepository.findAll` filters by `userId`
+**Suggested Layer**: API
+
+---
+
+### TC-208: Clearing bookings does not delete another user's bookings
+**Category**: Security
+**Priority**: P0
+**Preconditions**: User A and User B each have at least one booking
+**Steps**:
+1. Send `DELETE /api/bookings` with User A's valid JWT
+2. Fetch bookings as User B
+**Expected Results**: User A's bookings are deleted; User B's bookings remain unchanged
+**Business Rule**: Rule 2 — bookings are isolated by user; `deleteAllForUser` filters by `userId`
+**Suggested Layer**: API
+
+---
+
 ## Negative / Error
 
 ### TC-300: Navigate to non-existent booking ID shows "Booking not found"
@@ -437,6 +463,33 @@ Scope: Booking Management (Flow 4 — View, Cancel, Clear, Refund Eligibility)
 **Expected Results**: Error empty state renders: "Couldn't load bookings", "Failed to connect to the server. Please try again.", and a "Retry" button
 **Business Rule**: `isError` branch in `BookingsContent` component
 **Suggested Layer**: Component / E2E
+
+---
+
+### TC-309: Clear all bookings succeeds when the user has no bookings
+**Category**: Negative
+**Priority**: P2
+**Preconditions**: User is authenticated and has zero bookings
+**Steps**:
+1. Send `DELETE /api/bookings` with a valid JWT
+2. Repeat the request
+**Expected Results**: Both requests return HTTP 200 with a deleted count of 0; no error is raised
+**Business Rule**: `clearAllBookings` delegates to `deleteAllForUser`, which can delete zero records
+**Suggested Layer**: API
+
+---
+
+### TC-310: Failed booking at the booking limit does not remove an existing booking
+**Category**: Negative
+**Priority**: P0
+**Preconditions**: User has exactly 9 bookings; the attempted booking references a non-existent event or requests more seats than are available
+**Steps**:
+1. Record the user's 9 booking IDs
+2. Submit the invalid booking request via `POST /api/bookings`
+3. Retrieve the user's bookings again
+**Expected Results**: The request fails with the appropriate 404 or 400 response, and all 9 original bookings remain unchanged
+**Business Rule**: A rejected booking must not have destructive side effects; FIFO pruning applies only when a new booking is successfully created
+**Suggested Layer**: API
 
 ---
 
@@ -558,6 +611,20 @@ Scope: Booking Management (Flow 4 — View, Cancel, Clear, Refund Eligibility)
 **Expected Results**: `bookingRef` starts with "1-XXXXXX" (digit is used as-is, `toUpperCase()` has no effect on digits)
 **Business Rule**: `randomRef` — `prefix = (eventTitle?.[0] ?? 'E').toUpperCase()`
 **Suggested Layer**: API / Unit
+
+---
+
+### TC-409: Cancelling one booking preserves the user's other bookings
+**Category**: Edge Case
+**Priority**: P1
+**Preconditions**: User has at least two bookings, including the booking to cancel
+**Steps**:
+1. Record all booking IDs and quantities
+2. Cancel one booking
+3. Fetch the user's bookings again
+**Expected Results**: Only the selected booking is deleted; every other booking remains with its original details
+**Business Rule**: Flow 4 — cancellation deletes an individual booking, while other bookings remain available
+**Suggested Layer**: API / E2E
 
 ---
 
@@ -704,3 +771,33 @@ Scope: Booking Management (Flow 4 — View, Cancel, Clear, Refund Eligibility)
 **Expected Results**: `Pagination` component renders with correct `currentPage` and `totalPages`; clicking next page updates URL `?page=N` and loads next page of bookings
 **Business Rule**: Pagination in `BookingsContent` driven by `pagination` from API response
 **Suggested Layer**: E2E / Component
+
+---
+
+### TC-511: Dismissing the clear-all confirmation preserves bookings
+**Category**: UI State
+**Priority**: P1
+**Preconditions**: User is logged in and has at least one booking
+**Steps**:
+1. Navigate to `/bookings`
+2. Click "Clear all bookings"
+3. Dismiss the browser confirmation dialog
+4. Reload the bookings list
+**Expected Results**: The dialog closes; no delete request is made; all bookings remain
+**Business Rule**: Clear-all requires explicit confirmation before deletion
+**Suggested Layer**: E2E
+
+---
+
+### TC-512: Cancel action is shown only for confirmed bookings
+**Category**: UI State
+**Priority**: P2
+**Preconditions**: A booking detail page can be loaded for a confirmed booking and a non-confirmed booking
+**Steps**:
+1. Open the detail page for a confirmed booking
+2. Observe the available actions
+3. Open the detail page for a non-confirmed booking
+4. Observe the available actions
+**Expected Results**: "Cancel Booking" is visible for the confirmed booking and hidden for the non-confirmed booking
+**Business Rule**: Booking detail UI renders the cancel action only when `booking.status === 'confirmed'`
+**Suggested Layer**: Component / E2E

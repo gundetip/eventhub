@@ -104,6 +104,16 @@ npm run dev
 | `npm run migrate` | Run `prisma migrate dev` (interactive, creates migration files) |
 | `npm run db:push` | Push schema to DB without migration files (non-interactive) |
 | `npm run build` | Build the Next.js frontend for production |
+| `npm test` | Run the Playwright E2E suite |
+| `npm run test:report` | Open the latest Playwright HTML report |
+
+## Playwright CI
+
+The `Playwright E2E Tests` GitHub Actions workflow runs on pushes and pull requests targeting `main`, and can also be started manually. It creates an isolated MySQL service for each run, migrates and seeds that database, starts the backend and frontend locally, and runs the Chromium E2E suite. It does not require GitHub secrets or modify the hosted practice app.
+
+The workflow uploads the Playwright HTML report and test-results directory as an artifact even when a test fails. Download the `playwright-report-<run>-<attempt>` artifact from the completed workflow run to inspect it.
+
+Playwright tests default to `http://127.0.0.1:3000`. To run against another environment, set `PLAYWRIGHT_BASE_URL`, `E2E_TEST_EMAIL`, and `E2E_TEST_PASSWORD`. Write-capable tests refuse the hosted EventHub URL unless `PLAYWRIGHT_ALLOW_PRODUCTION=true` is explicitly set.
 
 ---
 

@@ -48,7 +48,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  NODE_VERSION: '21.7.1'
+  NODE_VERSION: '22'
 
 # ─────────────────────────────────────────────────────────────────────────────
 jobs:
@@ -167,6 +167,7 @@ jobs:
   schema-drift:
     name: Schema Drift Check (PR schema vs Production DB)
     runs-on: ubuntu-latest
+    if: github.repository == 'rahulshettyacademy/eventhub'
     needs: backend-checks   # Skip if backend checks fail – saves SSH round-trip
 
     steps:

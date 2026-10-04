@@ -8,6 +8,13 @@ const testUsers = [
   { email: 'rahulshetty1@yahoo.com', password: 'Magiclife1!' },
 ];
 
+const futureDate = (daysFromNow) => {
+  const date = new Date();
+  date.setDate(date.getDate() + daysFromNow);
+  date.setHours(12, 0, 0, 0);
+  return date;
+};
+
 // 3 static (admin) events — always visible to all users, seats never decrement
 const staticEvents = [
   {
@@ -16,7 +23,7 @@ const staticEvents = [
     category:       'Conference',
     venue:          'Hyderabad, Hitech city',
     city:           'Hyderabad',
-    eventDate:      new Date('2026-04-18T09:00:00.000Z'),
+    eventDate:      futureDate(30),
     price:          1500.00,
     totalSeats:     500,
     availableSeats: 500,
@@ -30,7 +37,7 @@ const staticEvents = [
     category:       'Concert',
     venue:          'Dome, NSCI SVP Stadium, Worli',
     city:           'Los Angeles',
-    eventDate:      new Date('2026-07-11T19:00:00.000Z'),
+    eventDate:      futureDate(45),
     price:          2500.00,
     totalSeats:     3000,
     availableSeats: 3000,
@@ -44,7 +51,7 @@ const staticEvents = [
     category:       'Festival',
     venue:          'Pragati Maidan Exhibition Grounds',
     city:           'Delhi',
-    eventDate:      new Date('2026-10-20T17:00:00.000Z'),
+    eventDate:      futureDate(60),
     price:          300.00,
     totalSeats:     10000,
     availableSeats: 10000,

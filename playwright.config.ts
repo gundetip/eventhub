@@ -6,10 +6,10 @@ export default defineConfig({
   expect: { timeout: 5_000 },
   fullyParallel: false,
   retries: 0,
-  reporter: 'html',
+  reporter: [['html', { open: 'never' }], ['line']],
 
   use: {
-    baseURL: 'https://eventhub.rahulshettyacademy.com',
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://127.0.0.1:3000',
     headless: true,
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',

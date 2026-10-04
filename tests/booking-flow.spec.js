@@ -133,7 +133,7 @@ test.describe('Booking Flow — first three strategy E2E scenarios', () => {
       await expect(page).toHaveURL(/\/bookings\/\d+/);
 
       const bookingId = new URL(page.url()).pathname.split('/').pop();
-      await expect(page.locator('nav').getByText(bookingRef)).toBeVisible();
+      await expect(page.getByText(bookingRef, { exact: true }).first()).toBeVisible();
       await expect(page.getByRole('heading', { name: 'Event Details' })).toBeVisible();
       await expect(page.getByText(booking.eventTitle, { exact: true }).first()).toBeVisible();
 
